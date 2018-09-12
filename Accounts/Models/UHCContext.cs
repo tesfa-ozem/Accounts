@@ -15,32 +15,22 @@ namespace Accounts.Models
         {
         }
 
-        public virtual DbSet<Agents> Agents { get; set; }
+        public virtual DbSet<AppUsers> AppUsers{ get; set; }
 
-       
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+
+                optionsBuilder.UseSqlServer("Server=.;Database=UHC;Trusted_Connection=True");
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Agents>(entity =>
-            {
-                entity.Property(e => e.DateRegistered).HasColumnType("datetime");
-
-                entity.Property(e => e.FirstName).HasMaxLength(50);
-
-                entity.Property(e => e.IdNumber).HasMaxLength(50);
-
-                entity.Property(e => e.LastModified).HasColumnType("datetime");
-
-                entity.Property(e => e.LastName).HasMaxLength(50);
-
-                entity.Property(e => e.MiddleName).HasMaxLength(50);
-
-                entity.Property(e => e.PhoneNumber).HasMaxLength(50);
-
-                entity.Property(e => e.TerminalId).HasMaxLength(50);
-
-                entity.Property(e => e.UserName).HasMaxLength(20);
-            });
+            modelBuilder.Entity<AppUsers > ()
+                .HasIndex(p => new { p.IdNumber, p.TerminalId,p.PhoneNumber})
+                .IsUnique(true);
         }
     }
 }

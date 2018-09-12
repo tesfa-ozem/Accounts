@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iis": {
-      "applicationUrl": "http://localhost/Accounts",
+      "applicationUrl": "http://localhost/Agents",
       "sslPort": 0
     },
     "iisExpress": {
@@ -29,7 +29,8 @@
     },
     "Agents": {
       "commandName": "IIS",
-      "launchBrowser": true
+      "launchBrowser": true,
+      "launchUrl": "http://localhost/Agents"
     }
   }
 }

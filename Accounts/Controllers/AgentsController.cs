@@ -12,156 +12,30 @@ using System.Data;
 using System.Net.Http;
 using System.Net;
 using Microsoft.AspNetCore.Http;
-
 using System.IO;
 using OfficeOpenXml;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Accounts.ViewModels;
 
 namespace Accounts.Controllers
 {
     public class AgentsController : Controller
     {
-        private readonly UHCContext _context;
-
-        public AgentsController(UHCContext context)
+       private readonly UHCContext _context;
+        Logic logic = new Logic();
+        
+        public IActionResult Index()
         {
-            _context = context;
-        }
+            List<AgentsViewModel> agents = logic.GetAllAgents();
 
-        // GET: Agents
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Agents.ToListAsync());
-        }
-
-        // GET: Agents/Details/5
-        public async Task<IActionResult> Details(long? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var agents = await _context.Agents
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (agents == null)
-            {
-                return NotFound();
-            }
-
-            return View(agents);
-        }
-
-        // GET: Agents/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Agents/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,MiddleName,LastName,UserName,Password,TerminalId,PhoneNumber,IdNumber,DateRegistered,LastModified")] Agents agents)
-        {
-            Logic logic = new Logic();
-            if (ModelState.IsValid)
-            {
-                logic.SendSMSAsync(agents);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(agents);
-        }
-
-        // GET: Agents/Edit/5
-        public async Task<IActionResult> Edit(long? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var agents = await _context.Agents.FindAsync(id);
-            if (agents == null)
-            {
-                return NotFound();
-            }
-            return View(agents);
-        }
-
-        // POST: Agents/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, [Bind("Id,FirstName,MiddleName,LastName,UserName,Password,TerminalId,PhoneNumber,IdNumber,DateRegistered,LastModified")] Agents agents)
-        {
-            if (id != agents.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(agents);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AgentsExists(agents.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(agents);
-        }
-
-        // GET: Agents/Delete/5
-        public async Task<IActionResult> Delete(long? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var agents = await _context.Agents
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (agents == null)
-            {
-                return NotFound();
-            }
-
-            return View(agents);
-        }
-
-        // POST: Agents/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(long id)
-        {
-            var agents = await _context.Agents.FindAsync(id);
-            _context.Agents.Remove(agents);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool AgentsExists(long id)
-        {
-            return _context.Agents.Any(e => e.Id == id);
+            return View("Index",agents);
         }
 
         [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
             Logic logic = new Logic();
+            List<AgentsViewModel> agents = logic.GetAllAgents();
             if (file == null || file.Length == 0)
             {
                 return RedirectToAction("Index");
@@ -173,12 +47,17 @@ namespace Accounts.Controllers
 
                 using (var package = new ExcelPackage(memoryStream))
                 {
-                    var worksheet = package.Workbook.Worksheets[1]; // Tip: To access the first worksheet, try index 1, not 0
-                    return Content(logic.readExcelPackageToString(package, worksheet));
+                    var worksheet = package.Workbook.Worksheets[1];
+
+                    logic.readExcelPackageToString(package, worksheet);
+                    // Tip: To access the first worksheet, try index 1, not 0
+                    
                 }
             }
 
-           
+            return RedirectToAction(actionName: nameof(Index));
+
+
         }
 
         public async Task<IActionResult> Download(string filename)
@@ -198,7 +77,6 @@ namespace Accounts.Controllers
             memory.Position = 0;
             return File(memory, GetContentType(path), Path.GetFileName(path));
         }
-
 
         private string GetContentType(string path)
         {
@@ -225,5 +103,51 @@ namespace Accounts.Controllers
             };
         }
 
+        
+        public IActionResult RegisterSingleUser([Bind("FirstName,LastName,SUBCOUNTY,WARD,VILLAGE,UserName,PhoneNumber,IdNumber")] AgentsViewModel appUsers)
+        {
+            
+
+            if (ModelState.IsValid)
+            {
+                logic.AddNewMember(appUsers);
+            }
+            return RedirectToAction(actionName: nameof(Index));
+        }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+        
+
+        
+        public IActionResult DeleteAgent([FromRoute]string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            logic.DeletUser(id);
+
+            return RedirectToAction(actionName: nameof(Index));
+        }
+
+        public IActionResult Login()
+        {
+            
+
+            return View("Login");
+        }
+
+        public IActionResult ValidateLogin(Login login)
+        {
+            if(login.UserName=="Admin" & login.Password == "kitui@254")
+            {
+                return RedirectToAction(actionName: nameof(Index));
+            }
+
+            return View("Login");
+        }
     }
 }

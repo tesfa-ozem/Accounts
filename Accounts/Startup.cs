@@ -68,7 +68,7 @@ namespace Accounts
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Agents}/{action=Index}/{id?}");
+                    template: "{controller=Agents}/{action=Login}/{id?}");
             });
         }
 
