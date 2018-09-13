@@ -39,7 +39,7 @@ namespace Accounts
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            var connection = @"Server=.;Database=UHC;Trusted_Connection=True";
+            var connection = @"Data Source=MAIN-SERVER;Initial Catalog=UHC;Integrated Security=True";
             services.AddDbContext<UHCContext>(options => options.UseSqlServer(connection));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
@@ -68,7 +68,7 @@ namespace Accounts
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Agents}/{action=Index}/{id?}");
+                    template: "{controller=Agents}/{action=Login}/{id?}");
             });
         }
 

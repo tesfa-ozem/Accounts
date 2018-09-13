@@ -24,9 +24,9 @@ namespace Accounts
             }
             catch (Exception ex)
             {
-                
+                return ex.Message.ToString();
             }
-            return null;
+            
         }
     }
 }

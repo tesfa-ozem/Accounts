@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace Accounts.Models
 {
-    public partial class Agents
+    public partial class Users
     {
         public long Id { get; set; }
         public string FirstName { get; set; }
@@ -21,19 +20,4 @@ namespace Accounts.Models
         public DateTime? DateRegistered { get; set; }
         public DateTime? LastModified { get; set; }
     }
-        public class AppUserResult
-    {
-        public int StatusCode { get; set; }
-        public int Message { get; set; }
-        public int IsSuccessful { get; set; }
-    }
-
-    public class Login
-    {
-        [Required]
-        public string UserName { get; set; }
-        [Required]
-        public string Password { get; set; }
-    }
-
 }

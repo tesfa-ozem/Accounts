@@ -1,12 +1,9 @@
-﻿@model IEnumerable<Accounts.ViewModels.AgentsViewModel>
+@model IEnumerable<Accounts.ViewModels.AgentsViewModel>
 
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_LayoutAgents.cshtml";
 }
-
-
-
 
 <div class="container">
     <div class="row">
@@ -19,15 +16,28 @@
                         <button class="btn btn-sm btn-outline-secondary">Share</button>
                         <button class="btn btn-sm btn-outline-secondary">Export</button>
                     </div>
-                    <div class="input"></div>
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
                         <span data-feather="calendar"></span>
                         This week
                     </button>
-                    <div class="calendar"></div>
+                    <div class="input-group">
+                    <input type="text" class="daterange" />
+                    <div class="input-group-append">
+                    <button id="reportrange" class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown
+                        <span data-feather="calendar"></span>
+                    </button>
+                    <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <a class="dropdown-item" href="#">Something else here</a>
+                    <div role="separator" class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">Separated link</a>
+                    </div>
+                    </div>
+                    </div>
                 </div>
             </div>
-            <form asp-controller="Agents" asp-action="UploadFile" method="post"
+            <form asp-controller="Agents" asp-action="UploadBulkFile" method="post"
                   enctype="multipart/form-data">
 
                 <input type="file" name="file" />
@@ -53,27 +63,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @{
-                                foreach (var item in Model)
-                                {
-                            <tr>
-                                <td>#</td>
-                                <td>@item.IdNumber</td>
-                                <td>@item.FirstName</td>
-                                <td>@item.LastName</td>
-                                
-                                <td>@item.PhoneNumber</td>
-                                <td>@item.SUBCOUNTY</td>
-                                <td>@item.WARD</td>
-                                <td>@item.UserName</td>
-                                <td>
-                                    |
-                                    
-                                    <a asp-controller="Agents" asp-action="DeleteAgent" asp-route-id="@item.IdNumber">Delete</a>
-                                </td>
-                            </tr>
-                                }
-                            }
+                            
 
                         </tbody>
                     </table>
@@ -82,3 +72,8 @@
     </div>
 </div>
 
+@section Scripts {
+   <script type="text/javascript">
+	$('.daterange').daterangepicker();
+</script>
+}
