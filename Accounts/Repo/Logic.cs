@@ -12,11 +12,19 @@ using System.IO;
 using System.Data;
 using Microsoft.AspNetCore.Hosting;
 using Accounts.ViewModels;
+using TableDependency.SqlClient.Base;
+using TableDependency.SqlClient;
+using TableDependency.SqlClient.Base.EventArgs;
+using TableDependency.SqlClient.Base.Enums;
+using Accounts.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Accounts.Repo
 {
     public class Logic
     {
+        private static string _con= "Data Source=MAIN-SERVER;Initial Catalog=UHC;Integrated Security=True";
+        public static string _con2 = "Data Source=MAIN-SERVER;Initial Catalog=TableDependencyDB;Integrated Security=True;User Id=Tesfa;Password=123@Team;TrustServerCertificate=True";
 
         UHCContext Context = new UHCContext();
         DateTime DateTime = new DateTime();
@@ -31,9 +39,9 @@ namespace Accounts.Repo
 
         public static string RandomPassword()
         {
-            
+
             int pin = random.Next(1000, 9999);
-            return new string( Security.EncryptString(pin.ToString(), Security.pPhrase));
+            return new string(Security.EncryptString(pin.ToString(), Security.pPhrase));
         }
 
         public string SendSMSAsync(AppUsers agents)
@@ -41,8 +49,8 @@ namespace Accounts.Repo
             try
             {
                 UHCContext context = new UHCContext();
-               
-     
+
+
                 Sms sms = new Sms();
 
                 Random random = new Random();
@@ -51,14 +59,14 @@ namespace Accounts.Repo
                 sms.SendSms(agents.PhoneNumber, msg);
                 agents.Password = Security.EncryptString(pin.ToString(), Security.pPhrase);
 
-                
+
 
                 return "";
             }
             catch (Exception)
             {
 
-                
+
             }
             return "";
         }
@@ -76,7 +84,7 @@ namespace Accounts.Repo
             try
             {
 
-                
+
                 var rowCount = worksheet.Dimension?.Rows;
                 var colCount = worksheet.Dimension?.Columns;
 
@@ -92,14 +100,14 @@ namespace Accounts.Repo
 
 
                     AppUsers agent = (new AppUsers
-                    {                   
+                    {
                         IdNumber = worksheet.Cells[row, 3].Value.ToString(),
                         PhoneNumber = worksheet.Cells[row, 4].Value.ToString(),
-                        SUBCOUNTY = worksheet.Cells[row,5].Value.ToString(),
-                        WARD = worksheet.Cells[row,6].Value.ToString(),
-                        VILLAGE = worksheet.Cells[row,6].Value.ToString(),
+                        SUBCOUNTY = worksheet.Cells[row, 5].Value.ToString(),
+                        WARD = worksheet.Cells[row, 6].Value.ToString(),
+                        VILLAGE = worksheet.Cells[row, 6].Value.ToString(),
                         Password = RandomPassword(),
-                        UserName = worksheet.Cells[row,3].Value.ToString(),
+                        UserName = worksheet.Cells[row, 3].Value.ToString(),
                         DateRegistered = DateTime.Now.Date
                     });
                     if (fullNames != null)
@@ -110,10 +118,10 @@ namespace Accounts.Repo
                             agent.LastName = names[1];
                     }
                     AgentsList.Add(agent);
-                
+
                 }
                 Context.AppUsers.AddRangeAsync(AgentsList);
-                
+
                 Context.SaveChanges();
                 return sb.ToString();
             }
@@ -127,12 +135,12 @@ namespace Accounts.Repo
 
         public List<AgentsViewModel> GetAllAgents()
         {
-            
+
             try
             {
-                
-               var AgentData = Context.AppUsers.OrderByDescending(u=>u.Id).ToList();
-                List<AgentsViewModel> agentsViews = new List<AgentsViewModel>(); 
+
+                var AgentData = Context.AppUsers.OrderByDescending(u => u.Id).ToList();
+                List<AgentsViewModel> agentsViews = new List<AgentsViewModel>();
                 foreach (AppUsers agent in AgentData)
                 {
                     AgentsViewModel AgentsViewModel = new AgentsViewModel()
@@ -144,7 +152,7 @@ namespace Accounts.Repo
                         SUBCOUNTY = agent.SUBCOUNTY,
                         TerminalId = agent.TerminalId,
                         UserName = agent.UserName,
-                        
+
                     };
                     agentsViews.Add(AgentsViewModel);
                 }
@@ -154,11 +162,11 @@ namespace Accounts.Repo
             catch (Exception)
             {
                 return new List<AgentsViewModel>();
-                
+
             }
         }
 
-        public  AppUserResult AddNewMember(AgentsViewModel agentsViewModel)
+        public AppUserResult AddNewMember(AgentsViewModel agentsViewModel)
         {
             try
             {
@@ -170,12 +178,12 @@ namespace Accounts.Repo
                     FirstName = agentsViewModel.FirstName,
                     LastName = agentsViewModel.LastName,
                     PhoneNumber = agentsViewModel.PhoneNumber,
-                    SUBCOUNTY =agentsViewModel.SUBCOUNTY,
+                    SUBCOUNTY = agentsViewModel.SUBCOUNTY,
                     WARD = agentsViewModel.WARD,
                     VILLAGE = agentsViewModel.VILLAGE,
                     Password = agentsViewModel.Password,
-                    UserName =  agentsViewModel.UserName,
-                    
+                    UserName = agentsViewModel.UserName,
+
                     DateRegistered = DateTime.Now.Date
                 });
 
@@ -199,10 +207,10 @@ namespace Accounts.Repo
             try
             {
                 UHCContext context = new UHCContext();
-                
-                var key =context.AppUsers.Where(e => e.IdNumber == Idnumber).FirstOrDefault();
+
+                var key = context.AppUsers.Where(e => e.IdNumber == Idnumber).FirstOrDefault();
                 var Agent = context.AppUsers.Find(key.Id);
-                
+
                 context.AppUsers.Remove(Agent);
                 context.SaveChanges();
                 return new AppUserResult()
@@ -212,11 +220,11 @@ namespace Accounts.Repo
             }
             catch (Exception)
             {
-                return  new AppUserResult()
+                return new AppUserResult()
                 {
-                    
-                }; 
-                
+
+                };
+
             }
         }
         public string readExcelPackageToStringBulk(ExcelPackage package, ExcelWorksheet worksheet)
@@ -224,7 +232,7 @@ namespace Accounts.Repo
             try
             {
 
-                
+
                 var rowCount = worksheet.Dimension?.Rows;
                 var colCount = worksheet.Dimension?.Columns;
 
@@ -240,19 +248,19 @@ namespace Accounts.Repo
 
 
                     BulkPayment Person = (new BulkPayment
-                    {                   
+                    {
                         FirstName = worksheet.Cells[row, 3].Value.ToString(),
                         MiddleName = worksheet.Cells[row, 4].Value.ToString(),
-                        LastName= worksheet.Cells[row,5].Value.ToString(),
-                        IdentificationNo = worksheet.Cells[row,6].Value.ToString(),
-                        PhoneNumber= worksheet.Cells[row,6].Value.ToString(),
+                        LastName = worksheet.Cells[row, 5].Value.ToString(),
+                        IdentificationNo = worksheet.Cells[row, 6].Value.ToString(),
+                        PhoneNumber = worksheet.Cells[row, 6].Value.ToString(),
                     });
-                    
+
                     AgentsList.Add(Person);
-                
+
                 }
                 Context.BulkPayments.AddRangeAsync(AgentsList);
-                
+
                 Context.SaveChanges();
                 return sb.ToString();
             }
@@ -264,6 +272,40 @@ namespace Accounts.Repo
             }
         }
 
+        public string GetAllPeople()
+        {
+            DataHub hub = new DataHub();
+            UHCContext DbContext = new UHCContext();
+        
+            //List<Principals> principals = new List<Principals>();
+            using (var tableDependency = new SqlTableDependency<AppUsers>(_con))
+            {
+                tableDependency.OnChanged += TableDependency_Changed;
+                
+            }
+            void TableDependency_Changed(object sender, RecordChangedEventArgs<AppUsers> e)
+            {
+                if (e.ChangeType != ChangeType.None)
+                {
+                    var changedEntity = e.Entity;
+                    hub.Clients.All.SendAsync("Notify",changedEntity.Id);
+                
+                }
+            }
 
+            var PrinciplesCount = DbContext.AppUsers.OrderByDescending(u => u.Id).ToList();
+
+            return PrinciplesCount.ToString();
+        }
+
+        public  List<Payments> GetPayments()
+        {
+            
+            var AllPayments = Context.Payments.OrderByDescending(e => e.Id).ToList();
+            
+            return AllPayments;
+        }
+        
+        
     }
 }

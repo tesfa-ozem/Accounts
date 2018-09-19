@@ -1,6 +1,8 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Accounts.Models
 {
@@ -10,9 +12,10 @@ namespace Accounts.Models
         {
         }
 
-        public UHCContext(DbContextOptions<UHCContext> options)
-            : base(options)
+        public UHCContext(DbContextOptions<UHCContext> options) 
+        : base(options)
         {
+
         }
 
         public virtual DbSet<AgentLogins> AgentLogins { get; set; }
@@ -49,14 +52,7 @@ namespace Accounts.Models
 
         // Unable to generate entity type for table 'dbo.RegistrationFields'. Please see the warning messages.
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-
-                optionsBuilder.UseSqlServer("Data Source=MAIN-SERVER;Initial Catalog=UHC;Integrated Security=True");
-            }
-        }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -569,5 +565,6 @@ namespace Accounts.Models
                 entity.Property(e => e.Valid).HasColumnName("VALID");
             });
         }
+    
     }
 }

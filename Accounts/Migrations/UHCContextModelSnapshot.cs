@@ -117,6 +117,29 @@ namespace Accounts.Migrations
                     b.ToTable("AppUsers");
                 });
 
+            modelBuilder.Entity("Accounts.Models.BulkPayment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("FirstName");
+
+                    b.Property<string>("IdentificationNo");
+
+                    b.Property<string>("LastName");
+
+                    b.Property<string>("MiddleName");
+
+                    b.Property<string>("PhoneNumber");
+
+                    b.Property<int>("Status");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BulkPayments");
+                });
+
             modelBuilder.Entity("Accounts.Models.ClientProfile", b =>
                 {
                     b.Property<int>("Id")

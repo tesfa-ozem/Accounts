@@ -14,6 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Accounts.Models;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
+using Accounts.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json.Serialization;
 
 namespace Accounts
 {
@@ -38,10 +41,16 @@ namespace Accounts
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            
 
-            var connection = @"Data Source=MAIN-SERVER;Initial Catalog=UHC;Integrated Security=True";
-            services.AddDbContext<UHCContext>(options => options.UseSqlServer(connection));
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc()
+            .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+            var Connection = Configuration.GetConnectionString("DatabaseConnection");
+            services.AddDbContext<UHCContext>(options => options.UseSqlServer(Connection, b => b.UseRowNumberForPaging()));
+            services.AddSignalR();
+            services.AddSingleton<IConfiguration>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,14 +70,17 @@ namespace Accounts
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-
+            
             app.UseAuthentication();
-
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<DataHub>("/DataHub");
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Agents}/{action=Login}/{id?}");
+                    template: "{controller=Agents}/{action=Index}/{id?}");
             });
         }
 

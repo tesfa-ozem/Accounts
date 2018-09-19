@@ -9,9 +9,12 @@
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.8.1" />
     <PackageReference Include="ECharts" Version="2.2.3" />
     <PackageReference Include="EPPlus" Version="4.5.2" />
+    
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Moment.js" Version="2.22.2" />
     <PackageReference Include="RestSharp" Version="106.3.1" />
+    <PackageReference Include="SqlTableDependency" Version="8.5.1" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.8.18" />
   </ItemGroup>
 
   <ItemGroup>

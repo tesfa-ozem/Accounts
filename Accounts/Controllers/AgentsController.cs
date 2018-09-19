@@ -3,30 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using System.Runtime.InteropServices.ComTypes;
+using Accounts.ViewModels;
+using Accounts.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using System.Linq.Dynamic.Core;
 using Accounts.Models;
-using Accounts.Repo;
-using System.Data;
-using System.Net.Http;
-using System.Net;
 using Microsoft.AspNetCore.Http;
+using Accounts.Repo;
 using System.IO;
 using OfficeOpenXml;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using Accounts.ViewModels;
 
 namespace Accounts.Controllers
 {
     public class AgentsController : Controller
     {
+    
+        private UHCContext _context;
+        public AgentsController(UHCContext context)
+        {
+            _context = context;
+        }
         Logic logic = new Logic();
         public IActionResult Index()
         {
-            List<AgentsViewModel> agents = logic.GetAllAgents();
+            
 
-            return View("Index", agents);
+            return View();
         }
 
         [HttpPost]
@@ -98,11 +100,10 @@ namespace Accounts.Controllers
         }
         public IActionResult RegisterSingleUser([Bind("FirstName,LastName,SUBCOUNTY,WARD,VILLAGE,UserName,PhoneNumber,IdNumber")] AgentsViewModel appUsers)
         {
-
-
             if (ModelState.IsValid)
             {
                 logic.AddNewMember(appUsers);
+                logic.GetAllPeople();
             }
             return RedirectToAction(actionName: nameof(Index));
         }
@@ -128,9 +129,10 @@ namespace Accounts.Controllers
         }
         public IActionResult ValidateLogin(Login login)
         {
+            
             if (login.UserName == "Admin" & login.Password == "kitui@254")
             {
-                return RedirectToAction(actionName: nameof(Index));
+                return RedirectToAction(actionName: nameof(Dashboard));
             }
 
             return View("Login");
@@ -163,5 +165,80 @@ namespace Accounts.Controllers
         {
             return View();
         }
+
+        public async Task<IActionResult> Registration()
+        {
+          
+        
+          // TODO Remove
+          await Task.Yield();
+        
+          return View("Registration");
+        }
+
+        public IActionResult Dashboard()
+        {
+            
+
+            return View("Dashboard");
+        }
+
+        public IActionResult Payments()
+        {
+        
+        return View();
+        }
+        
+        [HttpPost]
+        public IActionResult LoadData()
+        {
+            try
+            {
+                var draw = HttpContext.Request.Form["draw"].FirstOrDefault();
+                // Skiping number of Rows count  
+                var start = Request.Form["start"].FirstOrDefault();
+                // Paging Length 10,20  
+                var length = Request.Form["length"].FirstOrDefault();
+                // Sort Column Name  
+                var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
+                // Sort Column Direction ( asc ,desc)  
+                var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+                // Search Value from (Search box)  
+                var searchValue = Request.Form["search[value]"].FirstOrDefault();
+
+                //Paging Size (10,20,50,100)  
+                int pageSize = length != null ? Convert.ToInt32(length) : 0;
+                int skip = start != null ? Convert.ToInt32(start) : 0;
+                int recordsTotal = 0;
+
+                // Getting all Customer data  
+                var customerData = (from tempcustomer in _context.AppUsers
+                                    select tempcustomer);
+
+                //Sorting  
+                if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
+                {
+                    customerData = customerData.OrderBy(sortColumn + " " + sortColumnDirection);
+                }
+                //Search  
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    customerData = customerData.Where(m => m.Password== searchValue);
+                }
+
+                //total number of rows count   
+                recordsTotal = customerData.Count();
+                //Paging   
+                var data = customerData.Skip(skip).Take(pageSize).ToList();
+                //Returning Json Data  
+                return Json(new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
+
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message.ToString());
+            }
+        }
+
     }
 }
