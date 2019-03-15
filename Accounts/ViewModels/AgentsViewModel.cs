@@ -20,5 +20,7 @@ namespace Accounts.ViewModels
 
         public string IdNumber { get; set; }
         public DateTime DateRegistered { get; set; }
+        public bool Selected { get; set; }
+        
     }
 }

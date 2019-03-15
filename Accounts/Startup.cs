@@ -39,7 +39,7 @@ namespace Accounts
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            var connection = @"Data Source=MAIN-SERVER;Initial Catalog=UHC;Integrated Security=True";
+            var connection = "Server=.;Initial Catalog=UHC;Integrated Security=True";
             services.AddDbContext<UHCContext>(options => options.UseSqlServer(connection));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
@@ -47,16 +47,16 @@ namespace Accounts
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
+            app.Use(async (http, next) =>
+        {
+           if (http.Request.IsHttps)
+           {
+               // The request will continue if it is secure.
+               await next();
+           }
+
+           // In the case of HTTP request (not secure), end the pipeline here.
+       });
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

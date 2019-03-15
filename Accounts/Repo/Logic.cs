@@ -96,11 +96,12 @@ namespace Accounts.Repo
                         IdNumber = worksheet.Cells[row, 3].Value.ToString(),
                         PhoneNumber = worksheet.Cells[row, 4].Value.ToString(),
                         SUBCOUNTY = worksheet.Cells[row,5].Value.ToString(),
-                        WARD = worksheet.Cells[row,6].Value.ToString(),
-                        VILLAGE = worksheet.Cells[row,6].Value.ToString(),
+                        WARD ="",
+                        VILLAGE = "",
                         Password = RandomPassword(),
                         UserName = worksheet.Cells[row,3].Value.ToString(),
-                        DateRegistered = DateTime.Now.Date
+                        DateRegistered = DateTime.Now.Date,
+                        LastModified = DateTime.Now.Date
                     });
                     if (fullNames != null)
                     {
@@ -110,6 +111,7 @@ namespace Accounts.Repo
                             agent.LastName = names[1];
                     }
                     AgentsList.Add(agent);
+                    
                 
                 }
                 Context.AppUsers.AddRangeAsync(AgentsList);
@@ -144,6 +146,7 @@ namespace Accounts.Repo
                         SUBCOUNTY = agent.SUBCOUNTY,
                         TerminalId = agent.TerminalId,
                         UserName = agent.UserName,
+                        Password = agent.Password
                         
                     };
                     agentsViews.Add(AgentsViewModel);
@@ -151,7 +154,7 @@ namespace Accounts.Repo
 
                 return agentsViews;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return new List<AgentsViewModel>();
                 
