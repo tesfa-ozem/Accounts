@@ -50,7 +50,7 @@ namespace Accounts
                 cryptoStream.Close();
                 return Encoding.UTF8.GetString(numArray, 0, count);
             }
-            catch (Exception e)
+            catch (Exception f)
             {
 
                 throw;
