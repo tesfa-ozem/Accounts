@@ -23,13 +23,14 @@
             </form>
                 </div>
             </div>
-            <form asp-controller="Agents" asp-action="ExportExcel" method="post"
-                  role="form">
+            
+                <div class="table-responsive">
+                    <form asp-controller="Agents" asp-action="ExportExcel" method="post"
+                  >
                   <div class="btn-group mr-2">
                         <button class="btn btn-sm btn-outline-secondary">Share</button>
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">Export</button>
-            </div>
-                <div class="table-responsive">
+                        <button type="submit" value="Submit" class="btn btn-sm btn-outline-secondary">Export</button>
+                  </div>
                     <table class="table table-striped table-sm">
                         <thead>
                             <tr>
@@ -53,9 +54,11 @@
                                 {
                             <tr>
                                 <td>
-                                    <input type="checkbox" asp-for="@item.Selected"  />
-                                    <input type="hidden" asp-for="@item.IdNumber"  />
-                                    <input type="hidden" asp-for="@item.FirstName"  />
+                                    <input type="checkbox" asp-for="@item.Selected" checked= "@item.Selected" />
+                                    <input type="hidden" asp-for="@item.IdNumber" />
+                                    <input type="hidden" asp-for="@item.FirstName" />
+                                    <label asp-for="@item.Selected" type="hidden">@item.FirstName</label> 
+                                    
                                     
                                 </td>
                                 <td>@item.IdNumber</td>
@@ -78,8 +81,9 @@
 
                         </tbody>
                     </table>
+                    </form>
                 </div>
-            </form>
+            
             
         </main>
     </div>

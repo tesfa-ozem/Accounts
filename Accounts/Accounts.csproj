@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.8.1" />
+    <PackageReference Include="DotNetCore.NPOI" Version="1.2.1" />
     <PackageReference Include="ECharts" Version="2.2.3" />
     <PackageReference Include="EPPlus" Version="4.5.2" />
     <PackageReference Include="Microsoft.AspNetCore.App" />

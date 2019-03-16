@@ -18,6 +18,8 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Accounts.ViewModels;
 using OfficeOpenXml.Style;
 using Microsoft.AspNetCore.Hosting;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 
 namespace Accounts.Controllers
 {
@@ -173,9 +175,9 @@ namespace Accounts.Controllers
         }
 
         [HttpPost]
-        public IActionResult ExportExcel(List<AgentsViewModel> agents)
+        public IActionResult ExportExcel(List<AgentsViewModel> agent)
         {
-           
+            List<AgentsViewModel> agents = logic.GetAllAgents();
             List<AgentsViewModel> Checked = new List<AgentsViewModel>();
             foreach (AgentsViewModel checkedAgent in agents)
             {
@@ -187,53 +189,54 @@ namespace Accounts.Controllers
 
         protected async Task<IActionResult> ExportExcel_ClickAsync(List<AgentsViewModel> Agents)
         {
-            string sWebRootFolder = _hostingEnvironment.WebRootPath;
-            string sFileName = @"demo.xlsx";
-            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
-            FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
-            var memory = new MemoryStream();
-            using (var fs = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Create, FileAccess.Write))
+            try
             {
-                ExcelPackage excel = new ExcelPackage();
-                var workSheet = excel.Workbook.Worksheets.Add("Sheet1");
-                workSheet.TabColor = System.Drawing.Color.Black;
-                workSheet.DefaultRowHeight = 12;
-                //Header of table  
-                //  
-                workSheet.Row(1).Height = 20;
-                workSheet.Row(1).Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                workSheet.Row(1).Style.Font.Bold = true;
-                workSheet.Cells[1, 1].Value = "S.No";
-                workSheet.Cells[1, 2].Value = "Id";
-                workSheet.Cells[1, 3].Value = "Name";
-                workSheet.Cells[1, 4].Value = "PHONE NO";
-                workSheet.Cells[1, 5].Value = "PASSWORD";
-                //Body of table  
-                //  
-                int recordIndex = 2;
-                foreach (var agent in Agents)
+                var currentRow = 1;
+                string sWebRootFolder = _hostingEnvironment.WebRootPath;
+                string sFileName = @"demo.xlsx";
+                string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, sFileName);
+                FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
+                var memory = new MemoryStream();
+                using (var fs = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Create, FileAccess.Write))
                 {
-                    workSheet.Cells[recordIndex, 1].Value = (recordIndex - 1).ToString();
-                    workSheet.Cells[recordIndex, 2].Value = agent.IdNumber;
-                    workSheet.Cells[recordIndex, 3].Value = agent.FirstName;
-                    workSheet.Cells[recordIndex, 4].Value = agent.PhoneNumber;
-                    workSheet.Cells[recordIndex, 5].Value = agent.Password;
-                    recordIndex++;
+                    IWorkbook workbook;
+                    workbook = new XSSFWorkbook();
+                    ISheet excelSheet = workbook.CreateSheet("Demo");
+                    IRow row = excelSheet.CreateRow(0);
+
+                    row.CreateCell(0).SetCellValue("Name");
+                    row.CreateCell(1).SetCellValue("Id Number");
+                    row.CreateCell(2).SetCellValue("Phone Number");
+                    row.CreateCell(3).SetCellValue("PassWord");
+
+
+                    
+
+                    foreach (var user in Agents)
+                    {
+                        
+                    row = excelSheet.CreateRow(currentRow++);
+                    row.CreateCell(0).SetCellValue(user.FirstName);
+                    row.CreateCell(1).SetCellValue(user.IdNumber);
+                    row.CreateCell(2).SetCellValue(user.PhoneNumber);
+                    row.CreateCell(3).SetCellValue(Security.DecryptString(user.Password,Security.pPhrase));
+                    }
+
+                    workbook.Write(fs);
+
                 }
-                workSheet.Column(1).AutoFit();
-                workSheet.Column(2).AutoFit();
-                workSheet.Column(3).AutoFit();
-                workSheet.Column(4).AutoFit();
-                workSheet.Column(5).AutoFit();
-                string excelName = "studentsRecord";
-                fs.Write(excel.GetAsByteArray());
+                using (var stream = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
             }
-            using (var stream = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Open))
+            catch (Exception e)
             {
-                await stream.CopyToAsync(memory);
+
+                throw;
             }
-            memory.Position = 0;
-            return File(memory, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
         }
     }
 
